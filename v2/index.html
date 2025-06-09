@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TikFinity Phaser Overlay POC</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@4.0.0-rc.4/dist/phaser.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: transparent; /* Important for OBS overlay */
+            overflow: hidden; /* Hide scrollbars */
+        }
+        #phaser-game {
+            width: 800px;  /* Adjust to your desired overlay size */
+            height: 600px; /* Adjust to your desired overlay size */
+        }
+    </style>
+</head>
+<body>
+    <div id="phaser-game"></div>
+    <script src="game.js"></script>
+</body>
+</html>
