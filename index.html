@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TikFinity Overlay POC</title>
+  <style>
+    html,body{
+      margin:0;
+      padding:0;
+      overflow:hidden;
+      background:transparent; /* keep OBS overlays transparent */
+    }
+    canvas{display:block;}
+  </style>
+</head>
+<body>
+<script type="module">
+import Phaser from 'https://cdn.jsdelivr.net/npm/phaser@4.0.0-rc.4/dist/phaser.esm.js';
+
+/**
+ * Basic Phaser‑4 overlay that connects to the local TikFinity WebSocket
+ * (ws://localhost:21213) and pops a flying text message for any JSON event
+ * received.  Designed to be captured as a browser source in OBS / TikTok
+ * Live Studio.
+ */
+
+const config = {
+  type: Phaser.WEBGL,           // AUTO fallback works too
+  width: window.innerWidth,
+  height: window.innerHeight,
+  transparent: true,           // Important for overlays
+  parent: document.body,
+  scene: {
+    preload,
+    create,
+    update
+  }
+};
+
+const game = new Phaser.Game(config);
+
+function preload () {
+  // Drop asset loading here if you want animated sprites, sounds, etc.
+}
+
+function create () {
+  // Short‑lifetime group for flying texts
+  this.msgs = this.add.group();
+
+  // 🔌 Connect to TikFinity WebSocket
+  const socket = new WebSocket('ws://localhost:21213');
+
+  socket.addEventListener('open', () => {
+    console.log('[Overlay] WebSocket connected');
+  });
+
+  socket.addEventListener('message', evt => {
+    try {
+      const data = JSON.parse(evt.data);
+      handleEvent.call(this, data);
+    } catch (err) {
+      console.warn('[Overlay] Non‑JSON payload', evt.data);
+    }
+  });
+
+  socket.addEventListener('close', () => {
+    console.log('[Overlay] WebSocket closed');
+  });
+}
+
+/**
+ * Simple visual: create a piece of text that floats upward and fades.
+ * You can swap this for sprites, particle emitters, Spine animations, etc.
+ */
+function handleEvent (data) {
+  const { username = 'Viewer', type = 'event', giftName = '' } = data;
+  const msg = `${username} ➜ ${giftName || type}`;
+
+  const t = this.add.text(
+    Phaser.Math.Between(64, this.scale.width - 64),
+    this.scale.height + 40,
+    msg,
+    {
+      fontFamily: 'Arial',
+      fontSize: '32px',
+      color: '#ffffff',
+      stroke: '#000000',
+      strokeThickness: 4
+    }
+  ).setOrigin(0.5, 1);
+
+  // Store so resize can adjust later if desired
+  this.msgs.add(t);
+
+  // Tween: rise + fade
+  this.tweens.add({
+    targets: t,
+    y: '-=220',
+    alpha: 0,
+    duration: 3000,
+    ease: 'Quad.easeOut',
+    onComplete: () => t.destroy()
+  });
+}
+
+function update () {
+  // No per‑frame logic needed for this POC
+}
+
+// 📐 Keep overlay responsive in OBS / browser source
+window.addEventListener('resize', () => {
+  game.scale.resize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>

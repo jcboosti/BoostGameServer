@@ -1,5 +1,4 @@
-backend for https://jcboosti.github.io/BoostGame
-
+tikfinity event handler, passes wss messages to phaser web game
 
 # Getting Started
 
