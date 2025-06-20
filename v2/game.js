@@ -76,7 +76,7 @@ class TikFinityOverlayScene extends Phaser.Scene {
 
     handleTikFinityEvent(eventData) {
         // TikFinity sometimes uses "type" and sometimes "eventName"
-        const eventType = eventData.type || eventData.eventName;
+        const eventType = eventData.type || eventData.eventName || eventData.event;
         const data = eventData.data || {}; // Ensure data object exists
 
         let displayText = `Event: ${eventType}`;
